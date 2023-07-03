@@ -94,9 +94,9 @@ Then, run `jupyter notebook` on the target host (suppose it is gpu02):
 [W 2023-07-03 16:59:22.216 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
 [W 2023-07-03 16:59:22.216 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
 [W 2023-07-03 16:59:22.216 LabApp] 'ip' has moved from NotebookApp to ServerApp. This config will be passed to ServerApp. Be sure to update your config before our next release.
-[I 2023-07-03 16:59:22.225 LabApp] JupyterLab extension loaded from /home/shendi_zl/anaconda3/lib/python3.9/site-packages/jupyterlab
-[I 2023-07-03 16:59:22.225 LabApp] JupyterLab application directory is /home/shendi_zl/anaconda3/share/jupyter/lab
-[I 16:59:22.231 NotebookApp] Serving notebooks from local directory: /home/shendi_zl
+[I 2023-07-03 16:59:22.225 LabApp] JupyterLab extension loaded from /home/username/anaconda3/lib/python3.9/site-packages/jupyterlab
+[I 2023-07-03 16:59:22.225 LabApp] JupyterLab application directory is /home/username/anaconda3/share/jupyter/lab
+[I 16:59:22.231 NotebookApp] Serving notebooks from local directory: /home/username
 [I 16:59:22.231 NotebookApp] Jupyter Notebook 6.4.12 is running at:
 [I 16:59:22.231 NotebookApp] http://gpu02:8888/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 [I 16:59:22.231 NotebookApp]  or http://127.0.0.1:8888/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
