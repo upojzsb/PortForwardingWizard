@@ -18,7 +18,7 @@ remote_user@jump_server$ ssh remote_user@target_host -p 22
 remote_user@target_host
 ```
 
-## <a name="SSH"></a> SSH
+## SSH
 
 In this scenario, the target host can only be connected via a jump server. 
 
@@ -127,7 +127,7 @@ http://localhost:10022/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 
-# PyCharm
+## PyCharm
 
 *Note that only PyCharm Professional Edition supports remote coding*
 
