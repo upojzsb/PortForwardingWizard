@@ -3,7 +3,7 @@ from tk_functions import about_callback, connect_callback, disconnect_callback
 
 def get_window_info():
     return {
-        'version': '1.0',
+        'version': '1.01',
 
         'window_name': 'Port Forwarding Wizard',
 

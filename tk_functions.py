@@ -25,8 +25,10 @@ root_window = tk.Tk()
 window_name = ''
 version = ''
 variable_dict = dict()
+
 # Network related
 forwarding_tunnel = None
+
 # Status related
 connect_status = DISCONNECTED
 
@@ -101,7 +103,7 @@ def root_window_init(window_info):
             variable_dict['jump server'].insert(0, config_json['jump server'])
             variable_dict['target host'].insert(0, config_json['target host'])
             variable_dict['target port'].insert(0, config_json['target port'])
-            variable_dict['local port'].delete(0, 999)
+            variable_dict['local port'].delete(0, len(variable_dict['local port'].get()))
             variable_dict['local port'].insert(0, config_json['local port'])
         else:  # Config file invalid
             os.remove('config.json')
@@ -112,7 +114,7 @@ def root_window_init(window_info):
 # Callback functions
 def quit_confirm_message_callback():
     if connect_status == CONNECTED:
-        messagebox.showerror(window_name, 'Disconnect the tunnel before quitting!')
+        messagebox.showerror(window_name, 'Disconnect current tunnel before quitting!')
         return
 
     if messagebox.askyesno(window_name, 'Do you want to quit?'):
@@ -124,7 +126,7 @@ def quit_confirm_message_callback():
             'target port': variable_dict['target port'].get(),
             'local port': variable_dict['local port'].get()
         }
-        config_json = json.dumps(config_dict)
+
         with open('config.json', 'w') as fp:
             json.dump(config_dict, fp)
 
@@ -132,6 +134,15 @@ def quit_confirm_message_callback():
 
 
 def connect_callback():
+    global forwarding_tunnel, connect_status
+
+    if connect_status == CONNECTED:
+        messagebox.showwarning(
+            window_name,
+            'Disconnect current tunnel before start a new connection.'
+        )
+        return
+
     # Get contents of entries
     username = variable_dict['username'].get()
     jump_server = variable_dict['jump server'].get()
@@ -161,7 +172,6 @@ def connect_callback():
         )
         return
 
-    global forwarding_tunnel, connect_status
     forwarding_tunnel = forwarding_through_jump_server(username, jump_server, target_host, local_port, target_port)
     connect_status = CONNECTED
     refresh_labels(variable_dict['status'], CONNECTED_TEXT)
