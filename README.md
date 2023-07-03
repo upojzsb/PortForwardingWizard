@@ -18,7 +18,7 @@ remote_user@jump_server$ ssh remote_user@target_host -p 22
 remote_user@target_host
 ```
 
-## SSH
+## <a name="SSH"></a> SSH
 
 In this scenario, the target host can only be connected via a jump server. 
 
@@ -129,21 +129,21 @@ http://localhost:10022/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # PyCharm
 
-*Note that only PyCharm Professional Edition support remote coding*
+*Note that only PyCharm Professional Edition supports remote coding*
 
-Before setting on PyCharm, do the same thing as **SSH** section.
+Before setting on PyCharm, do the same thing as the **[SSH](#ssh)** section.
 
-After set up a project, select **File-Settings**,
-select **Project-Python Interpreter** on the left panel.
+After setting up a project, select **File-Settings**,
+and select **Project-Python Interpreter** on the left panel.
 Select **Show all...** in **Python Interpreter** on the right panel
 Add a new interpreter by clicking the plus sign "+"
 
-Fill the blanks as below, **Port** and **Username** is identical to the **Local host** and **Username** filled in our wizard.
+Fill in the blanks as below, **Port** and **Username** are identical to the **Local host** and **Username** filled in our wizard.
 ![Add Python Interpreter](/img/AddPythonInterpreter.png)
 
-Click **Next**, filling in the **Interpreter** and **Sync folders** as needed, then  click **Finish**.
+Click **Next**, fill in the **Interpreter** and **Sync folders** as needed, then  click **Finish**.
 ![Add Python Interpreter2](/img/AddPythonInterpreter2.png)
 
-Right-click the project in **Project** panel, select **Deployment-Upload To ...**.
+Right-click the project in the **Project** panel, and select **Deployment-Upload To ...**.
 
-PyCharm may works as you wish.
+PyCharm may work as you wish.
