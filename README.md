@@ -4,7 +4,7 @@ A simple utility that can forward a remote port onto localhost via s jump server
 
 # Usage
 
-*Only tested on forwarding ssh and Jupyter, and the OS of the localhost should be Windows*
+*Only tested on forwarding ssh, Jupyter and PyCharm Professional version on a Windows PC as the localhost and CentOS 7 as the remote servers*
 
 Before using, make sure that key authentication is corrected set both between localhost and jump server and jump server and target host. And the username of jump server and target host should be same.
 
@@ -125,3 +125,25 @@ And then, click **Connect** button,  wait until the status becomes `Connected`, 
 ```
 http://localhost:10022/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+
+# PyCharm
+
+*Note that only PyCharm Professional Edition support remote coding*
+
+Before setting on PyCharm, do the same thing as **SSH** section.
+
+After set up a project, select **File-Settings**,
+select **Project-Python Interpreter** on the left panel.
+Select **Show all...** in **Python Interpreter** on the right panel
+Add a new interpreter by clicking the plus sign "+"
+
+Fill the blanks as below, **Port** and **Username** is identical to the **Local host** and **Username** filled in our wizard.
+![Add Python Interpreter](/img/AddPythonInterpreter.png)
+
+Click **Next**, filling in the **Interpreter** and **Sync folders** as needed, then  click **Finish**.
+![Add Python Interpreter2](/img/AddPythonInterpreter2.png)
+
+Right-click the project in **Project** panel, select **Deployment-Upload To ...**.
+
+PyCharm may works as you wish.
