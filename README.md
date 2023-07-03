@@ -1,12 +1,12 @@
 # Port Forwarding Wizard
 
-A simple utility that can forward a remote port onto localhost via s jump server.
+A simple utility that can forward a remote port onto localhost via a jump server.
 
 # Usage
 
 *Only tested on forwarding ssh and Jupyter, and the OS of the localhost should be Windows*
 
-Before using, make sure that key authentication is corrected set both between localhost and jump server and jump server and target host. And the username of jump server and target host should be same.
+Before using, make sure that key authentication is set correctly between localhost and jump server and jump server and target host. And the username of the jump server and target host should be the same.
 
 For example, if you want to forward SSH service, the following commands should be run properly without input password:
 ```shell
@@ -14,17 +14,17 @@ For example, if you want to forward SSH service, the following commands should b
 localuser@localhost$ ssh remote_user@jump_server -p 22
 # Connect target host from jump server
 remote_user@jump_server$ ssh remote_user@target_host -p 22
-# And the username in jump server and target host should be same
+# And the username in the jump server and target host should be the same
 remote_user@target_host
 ```
 
 ## SSH
 
-In this scenario, the target host can only be connected via jump server. 
+In this scenario, the target host can only be connected via a jump server. 
 
 Suppose that the IP of the jump server is `1.1.1.1`, 
-the username of jump server and the target host are the same, which is `username`, 
-hostname of the target is `cu01`, which could be accessed on the jump server, 
+the username of the jump server and the target host is the same, which is `username`, 
+the hostname of the target is `cu01`, which could be accessed on the jump server, 
 and the port of SSH on the target host is `22`, and you want to map it as `10022` on localhost.
 
 Just fill in the blanks as follows:
@@ -38,14 +38,14 @@ Just fill in the blanks as follows:
 | Local Port:  | 10022    |
 
 
-And then, click **Connect** button, wait until the status becomes `Connected`, you can connect to the `cu01` via `ssh`:
+And then, click the **Connect** button, and wait until the status becomes `Connected`, you can connect to the `cu01` via `ssh`:
 
 ```shell
 localuser@localhost$ ssh username@localhost -p 10022
 username@cu01$ 
 ```
 
-If you connect to different target hosts, `ssh` may warn you like:
+If you connect to different target hosts, `ssh` may warn you like this:
 
 ```shell
 localuser@localhost$ ssh username@localhost -p 10022
@@ -64,7 +64,7 @@ ECDSA host key for [localhost]:10022 has changed and you have requested strict c
 Host key verification failed.
 ```
 
-You just need to remove line below in file `~/.ssh/known_hosts`
+You need to remove the line below in file `~/.ssh/known_hosts`
 
 ```
 [localhost]:10022 xxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -72,8 +72,8 @@ You just need to remove line below in file `~/.ssh/known_hosts`
 
 ## Jupyter
 Suppose that the IP of the jump server is `1.1.1.1`, 
-the username of jump server and the target host are the same, which is `username`, 
-hostname of the target is `gpu02`, which could be accessed on the jump server, 
+the username of the jump server and the target host is the same, which is `username`, 
+the hostname of the target is `gpu02`, which could be accessed on the jump server, 
 the port of Jupyter would occur when running it, and you want to map it as `10022` on localhost.
 
 First, make a configure file for Jupyter on your target host:
@@ -110,7 +110,7 @@ Then, run `jupyter notebook` on the target host (suppose it is gpu02):
      or http://127.0.0.1:8888/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Remember the port (`8888` in this case, or you can just set it in `~/.jupyter/jupyter_notebook_config.py` file), and fill in the blanks as follows:
+Remember the port (`8888` in this case, or you can just set it in the `~/.jupyter/jupyter_notebook_config.py` file), and fill in the blanks as follows:
 
 | Key          | Value    |
 |--------------|----------|
@@ -120,7 +120,7 @@ Remember the port (`8888` in this case, or you can just set it in `~/.jupyter/ju
 | Target Port: | 8888     |
 | Local Port:  | 10022    |
 
-And then, click **Connect** button,  wait until the status becomes `Connected`, you can browse the Jupyter on your localhost by visiting:
+And then, click the **Connect** button,  and wait until the status becomes `Connected`, you can browse the Jupyter on your localhost by visiting:
 
 ```
 http://localhost:10022/?token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
