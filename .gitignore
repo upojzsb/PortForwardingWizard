@@ -3,10 +3,18 @@
 
 # IntelliJ project files
 .idea
+
+# PyInstall
 build
 dist
 *.iml
 *.spec
+
+# Congigureation
 config.json
+
+# pycache
+__pycache__
+
 out
 gen
