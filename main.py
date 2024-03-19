@@ -1,11 +1,9 @@
-from utils import *
-from tk_functions import root_window_init
+from root_window import RootWindow
 
 
 def main():
-    root_window = root_window_init(get_window_info())
-
-    root_window.mainloop()
+    app = RootWindow()
+    app.mainloop()
 
 
 if __name__ == '__main__':
