@@ -5,10 +5,12 @@ from tkinter import messagebox
 
 from paramiko_functions import *
 
+from advanced_settings_window import AdvancedSettingsWindow
+
 
 class RootWindow(tk.Frame):
-    # Project Informations
-    version = '1.10'
+    # Project Information
+    version = '2.00'
     window_name = 'Port Forwarding Wizard'
 
     # Constants
@@ -22,13 +24,16 @@ class RootWindow(tk.Frame):
 
     # Global variables
     # # Tk related
-    variable_dict = dict()
+    tk_variable_dict = dict()
 
     # # Network related
     forwarding_tunnel = None
 
     # # Status related
     connect_status = DISCONNECTED
+
+    # # Flags
+    check_connectivity_flag = 0
 
     def __init__(self):
         """
@@ -51,7 +56,9 @@ class RootWindow(tk.Frame):
         # Callback functions
         self.master.protocol('WM_DELETE_WINDOW', self.quit_confirm_message_callback)
 
-
+        # Load all settings
+        self.load_settings()
+        self.load_advanced_settings()
 
     def _create_init_widgets_(self):
         """
@@ -76,10 +83,15 @@ class RootWindow(tk.Frame):
             'Disconnect': [250, 250, self.disconnect_callback],
 
             # TODO: Add some advanced settings, including:
+            # MISC
             # 1. Add a selection to disable pre-connection test
+
+            # SSH KEY SETTING
             # 2. Add a config to select the ssh key file path and file name
             # 3. Add a config to input the password of the ssh key file
             # 4. Allow different key file in connecting jump server and the target server
+
+            # ?
             # 5. Allow different user in connecting jump server and the target server
             'Advanced\nSettings': [350, 200, self.advanced_settings_callback],
             'About': [350, 250, self.about_callback],
@@ -94,44 +106,65 @@ class RootWindow(tk.Frame):
             tk.Button(self.master, text=k, width=10, height=2, command=v[2]).place(x=v[0], y=v[1])
 
         # Variable Labels
-        self.variable_dict['status'] = tk.Label(self.master, text='')
+        self.tk_variable_dict['status'] = tk.Label(self.master, text='')
 
-        self.variable_dict['status'].place(x=120, y=240)
+        self.tk_variable_dict['status'].place(x=120, y=240)
 
         # Variable Entries
-        self.variable_dict['username'] = tk.Entry(self.master, width=40)
-        self.variable_dict['jump server'] = tk.Entry(self.master, width=40)
-        self.variable_dict['target host'] = tk.Entry(self.master, width=40)
-        self.variable_dict['target port'] = tk.Entry(self.master, width=40)
-        self.variable_dict['local port'] = tk.Entry(self.master, width=10)
+        self.tk_variable_dict['username'] = tk.Entry(self.master, width=40)
+        self.tk_variable_dict['jump server'] = tk.Entry(self.master, width=40)
+        self.tk_variable_dict['target host'] = tk.Entry(self.master, width=40)
+        self.tk_variable_dict['target port'] = tk.Entry(self.master, width=40)
+        self.tk_variable_dict['local port'] = tk.Entry(self.master, width=10)
 
-        self.variable_dict['username'].place(x=120, y=20)
-        self.variable_dict['jump server'].place(x=120, y=60)
-        self.variable_dict['target host'].place(x=120, y=100)
-        self.variable_dict['target port'].place(x=120, y=140)
-        self.variable_dict['local port'].place(x=120, y=200)
+        self.tk_variable_dict['username'].place(x=120, y=20)
+        self.tk_variable_dict['jump server'].place(x=120, y=60)
+        self.tk_variable_dict['target host'].place(x=120, y=100)
+        self.tk_variable_dict['target port'].place(x=120, y=140)
+        self.tk_variable_dict['local port'].place(x=120, y=200)
 
         # Init TK items
-        self.variable_dict['local port'].insert(0, '10022')
-        self.variable_dict['status'].config(text=self.DISCONNECTED_TEXT)
+        self.tk_variable_dict['local port'].insert(0, '10022')
+        self.tk_variable_dict['status'].config(text=self.DISCONNECTED_TEXT)
 
         self.connect_status = self.DISCONNECTED
 
-        # Use saved config
+    def load_settings(self):
         if os.path.exists('config.json'):
             with open('config.json', 'r') as fp:
                 config_json = json.load(fp)
 
             if {'username', 'jump server', 'target host', 'target port', 'local port'}.issubset(
                     set(config_json.keys())):
-                self.variable_dict['username'].insert(0, config_json['username'])
-                self.variable_dict['jump server'].insert(0, config_json['jump server'])
-                self.variable_dict['target host'].insert(0, config_json['target host'])
-                self.variable_dict['target port'].insert(0, config_json['target port'])
-                self.variable_dict['local port'].delete(0, len(self.variable_dict['local port'].get()))
-                self.variable_dict['local port'].insert(0, config_json['local port'])
+                self.tk_variable_dict['username'].insert(0, config_json['username'])
+                self.tk_variable_dict['jump server'].insert(0, config_json['jump server'])
+                self.tk_variable_dict['target host'].insert(0, config_json['target host'])
+                self.tk_variable_dict['target port'].insert(0, config_json['target port'])
+                self.tk_variable_dict['local port'].delete(0, 'end')
+                self.tk_variable_dict['local port'].insert(0, config_json['local port'])
             else:  # Config file invalid
                 os.remove('config.json')
+
+    def save_settings(self):
+        # Save the configs
+        config_dict = {
+            'username': self.tk_variable_dict['username'].get(),
+            'jump server': self.tk_variable_dict['jump server'].get(),
+            'target host': self.tk_variable_dict['target host'].get(),
+            'target port': self.tk_variable_dict['target port'].get(),
+            'local port': self.tk_variable_dict['local port'].get()
+        }
+
+        with open('config.json', 'w') as fp:
+            json.dump(config_dict, fp)
+
+    def load_advanced_settings(self):
+        if os.path.exists('config_advanced.json'):
+            with open('config_advanced.json', 'r') as fp:
+                config_json = json.load(fp)
+
+            if {'miscConnectivityCheck', }.issubset(set(config_json.keys())):
+                self.check_connectivity_flag = config_json['miscConnectivityCheck']
 
     # Callback functions
     def quit_confirm_message_callback(self):
@@ -140,18 +173,7 @@ class RootWindow(tk.Frame):
             return
 
         if messagebox.askyesno(self.window_name, 'Do you want to quit?'):
-            # Save the configs
-            config_dict = {
-                'username': self.variable_dict['username'].get(),
-                'jump server': self.variable_dict['jump server'].get(),
-                'target host': self.variable_dict['target host'].get(),
-                'target port': self.variable_dict['target port'].get(),
-                'local port': self.variable_dict['local port'].get()
-            }
-
-            with open('config.json', 'w') as fp:
-                json.dump(config_dict, fp)
-
+            self.save_settings()
             self.master.destroy()
 
     def connect_callback(self):
@@ -163,33 +185,34 @@ class RootWindow(tk.Frame):
             return
 
         # Get contents of entries
-        username = self.variable_dict['username'].get()
-        jump_server = self.variable_dict['jump server'].get()
-        target_host = self.variable_dict['target host'].get()
-        target_port = int(self.variable_dict['target port'].get())
-        local_port = int(self.variable_dict['local port'].get())
+        username = self.tk_variable_dict['username'].get()
+        jump_server = self.tk_variable_dict['jump server'].get()
+        target_host = self.tk_variable_dict['target host'].get()
+        target_port = int(self.tk_variable_dict['target port'].get())
+        local_port = int(self.tk_variable_dict['local port'].get())
 
         # Check connectivity of the jump server
-        try:
-            check_host_availability(username, jump_server)
-        except Exception as e:
-            messagebox.showerror(
-                self.window_name,
-                'Check connectivity of the jump server FAILED.\n'
-                'Error message:\n' + e.__repr__()
-            )
-            return
+        if self.check_connectivity_flag:
+            try:
+                check_host_availability(username, jump_server)
+            except Exception as e:
+                messagebox.showerror(
+                    self.window_name,
+                    'Check connectivity of the jump server FAILED.\n'
+                    'Error message:\n' + e.__repr__()
+                )
+                return
 
-        # Check connectivity of the target host
-        try:
-            check_target_host_availability(username, jump_server, target_host, local_port)
-        except Exception as e:
-            messagebox.showerror(
-                self.window_name,
-                'Check connectivity of the target host FAILED.\n'
-                'Error message:\n' + e.__repr__()
-            )
-            return
+            # Check connectivity of the target host
+            try:
+                check_target_host_availability(username, jump_server, target_host, local_port)
+            except Exception as e:
+                messagebox.showerror(
+                    self.window_name,
+                    'Check connectivity of the target host FAILED.\n'
+                    'Error message:\n' + e.__repr__()
+                )
+                return
 
         self.forwarding_tunnel = forwarding_through_jump_server(
             username,
@@ -199,12 +222,12 @@ class RootWindow(tk.Frame):
             target_port
         )
         self.connect_status = self.CONNECTED
-        self.refresh_labels(self.variable_dict['status'], self.CONNECTED_TEXT)
+        self.refresh_labels(self.tk_variable_dict['status'], self.CONNECTED_TEXT)
 
     def disconnect_callback(self):
         self.forwarding_tunnel.close()
         self.connect_status = self.DISCONNECTED
-        self.refresh_labels(self.variable_dict['status'], self.DISCONNECTED_TEXT)
+        self.refresh_labels(self.tk_variable_dict['status'], self.DISCONNECTED_TEXT)
 
     def about_callback(self):
         messagebox.showinfo(
@@ -213,10 +236,11 @@ class RootWindow(tk.Frame):
         )
 
     def advanced_settings_callback(self):
-        messagebox.showinfo(
-            self.window_name,
-            'Not yet implemented'
-        )
+        advanced_window = AdvancedSettingsWindow(self)
+        advanced_window.grab_set()  # This will make the AdvancedSettingsWindow modal
+        self.wait_window(advanced_window)  # Wait for AdvancedSettingsWindow to be closed before resuming
+
+        self.load_advanced_settings()
 
     # Static methods
     @staticmethod

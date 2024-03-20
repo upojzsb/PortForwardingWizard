@@ -5,13 +5,15 @@
 .idea
 
 # PyInstall
+create_bin.bat
+
 build
 dist
 *.iml
 *.spec
 
 # Congigureation
-config.json
+config*.json
 
 # pycache
 __pycache__
