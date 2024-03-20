@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.10] - 2024-03-20
+
+### Added
+
+- Implemented the **Default** button in the **advanced settings** window for resetting settings to default values.
+- Added functionality for selecting an SSH Key File in the **advanced settings** window.
+
+### Fixed
+
+- Fixed an issue where the text could be changed when connected.
+- Fixed an issue that the ports could be set out of [1, 65535].
+
 ## [2.00] - 2024-03-20
 
 ### Added

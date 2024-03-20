@@ -3,6 +3,7 @@ import json
 
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
 
 from paramiko_functions import *
 
@@ -57,12 +58,16 @@ class AdvancedSettingsWindow(tk.Toplevel):
         # Tk
         tk_labels = {
             # Text: [x, y, master]
+            'SSH Key Path:': [0, 0, frame_ssh_key_settings]
         }
 
         tk_buttons = {
             # Text: [x, y, callback, master]
-            'Apply': [250, 250, self.apply_callback, self],
-            'Cancel': [350, 250, self.cancel_callback, self],
+            'Apply': [150, 250, self.apply_callback, self],
+            'Cancel': [250, 250, self.cancel_callback, self],
+            'Default': [350, 250, self.default_callback, self],
+            # ssh key settings frame
+            'Pick\nPrivate Key': [350, -10, self.pick_key_callback, frame_ssh_key_settings],
         }
 
         tk_checkbuttons = {
@@ -70,9 +75,14 @@ class AdvancedSettingsWindow(tk.Toplevel):
             'miscConnectivityCheck': [0, 0, frame_misc, 'Check the connectivity before set up tunnel']
         }
 
+        tk_entry = {
+            # variable name: [x, y, master]
+            'sshkeyPath': [100, 0, frame_ssh_key_settings]
+        }
+
         # Fixed Labels
         for k, v in tk_labels.items():
-            tk.Label(v[3], text=k).place(x=v[0], y=v[1])
+            tk.Label(v[2], text=k).place(x=v[0], y=v[1])
 
         # Fixed Buttons
         for k, v in tk_buttons.items():
@@ -86,22 +96,74 @@ class AdvancedSettingsWindow(tk.Toplevel):
             self.variable_dict[k] = tk.IntVar()
             checkbutton['variable'] = self.variable_dict[k]
 
+        # Fixed entry
+        for k, v in tk_entry.items():
+            self.variable_dict[k] = tk.StringVar()
+
+            entry = tk.Entry(v[2], width=40, textvariable=self.variable_dict[k])
+            entry.place(x=v[0], y=v[1])
+
     def load_advanced_settings(self):
-        # Use saved config
         if os.path.exists('config_advanced.json'):
             with open('config_advanced.json', 'r') as fp:
                 config_json = json.load(fp)
 
-            if {'miscConnectivityCheck', }.issubset(set(config_json.keys())):
+            if {'miscConnectivityCheck', 'sshkeyPath', }.issubset(set(config_json.keys())):
                 self.variable_dict['miscConnectivityCheck'].set(config_json['miscConnectivityCheck'])
+                self.variable_dict['sshkeyPath'].set(config_json['sshkeyPath'])
+                # File exist and valid
+                return
+        # Neither the file does not exist nor its invalid
+        self.default_callback()
 
     def save_advanced_settings(self):
         config_dict = {
             'miscConnectivityCheck': self.variable_dict['miscConnectivityCheck'].get(),
+            'sshkeyPath': self.variable_dict['sshkeyPath'].get(),
         }
 
         with open('config_advanced.json', 'w') as fp:
             json.dump(config_dict, fp)
+
+    def pick_key_callback(self):
+        # Initial dir
+        original_text = self.variable_dict['sshkeyPath'].get()
+        if os.path.exists(os.path.dirname(original_text)):
+            initialdir = os.path.dirname(original_text)
+        elif os.path.exists(os.path.expanduser('~/.ssh/')):
+            initialdir = os.path.expanduser('~/.ssh/')
+        else:
+            initialdir = os.path.expanduser('~/')
+
+        filename = filedialog.askopenfilename(
+            title='Select SSH Key File',
+            initialdir=initialdir
+        )
+
+        # Nothing selected
+        if not filename:
+            return
+
+        if filename.endswith('pub'):
+            messagebox.showerror(
+                self.window_name,
+                'Pick the private key file instead of the public key file.'
+            )
+            # Do not set the entry
+            return
+
+        with open(filename, mode='r') as fp:
+            first_line = fp.readline()
+
+        if 'private' not in first_line.lower() or 'key' not in first_line.lower():
+            messagebox.showerror(
+                self.window_name,
+                'This is not a valid private key file.'
+            )
+            # Do not set the entry
+            return
+
+        self.variable_dict['sshkeyPath'].set(filename)
 
     def apply_callback(self):
         if messagebox.askyesno(self.window_name, 'Do you want to apply?'):
@@ -109,5 +171,8 @@ class AdvancedSettingsWindow(tk.Toplevel):
             self.destroy()
 
     def cancel_callback(self):
-        if messagebox.askyesno(self.window_name, 'Do you want to cancel?'):
-            self.destroy()
+        self.destroy()
+
+    def default_callback(self):
+        self.variable_dict['miscConnectivityCheck'].set(1)
+        self.variable_dict['sshkeyPath'].set(os.path.expanduser('~/.ssh/id_rsa'))

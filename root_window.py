@@ -10,7 +10,7 @@ from advanced_settings_window import AdvancedSettingsWindow
 
 class RootWindow(tk.Frame):
     # Project Information
-    version = '2.00'
+    version = '2.10'
     window_name = 'Port Forwarding Wizard'
 
     # Constants
@@ -34,6 +34,9 @@ class RootWindow(tk.Frame):
 
     # # Flags
     check_connectivity_flag = 0
+
+    # # Path
+    ssh_key_file = ''
 
     def __init__(self):
         """
@@ -84,15 +87,11 @@ class RootWindow(tk.Frame):
 
             # TODO: Add some advanced settings, including:
             # MISC
-            # 1. Add a selection to disable pre-connection test
 
             # SSH KEY SETTING
-            # 2. Add a config to select the ssh key file path and file name
             # 3. Add a config to input the password of the ssh key file
             # 4. Allow different key file in connecting jump server and the target server
 
-            # ?
-            # 5. Allow different user in connecting jump server and the target server
             'Advanced\nSettings': [350, 200, self.advanced_settings_callback],
             'About': [350, 250, self.about_callback],
         }
@@ -163,8 +162,24 @@ class RootWindow(tk.Frame):
             with open('config_advanced.json', 'r') as fp:
                 config_json = json.load(fp)
 
-            if {'miscConnectivityCheck', }.issubset(set(config_json.keys())):
+            if {'miscConnectivityCheck', 'sshkeyPath', }.issubset(set(config_json.keys())):
                 self.check_connectivity_flag = config_json['miscConnectivityCheck']
+                self.ssh_key_file = config_json['sshkeyPath']
+
+                # All ok
+                return
+
+        # Something wrong
+        # Create the config_advanced.json as the default value
+        self.check_connectivity_flag = 1
+        self.ssh_key_file = os.path.expanduser('~/.ssh/id_rsa')
+        config_dict = {
+            'miscConnectivityCheck': self.check_connectivity_flag,
+            'sshkeyPath': self.ssh_key_file,
+        }
+
+        with open('config_advanced.json', 'w') as fp:
+            json.dump(config_dict, fp)
 
     # Callback functions
     def quit_confirm_message_callback(self):
@@ -191,10 +206,21 @@ class RootWindow(tk.Frame):
         target_port = int(self.tk_variable_dict['target port'].get())
         local_port = int(self.tk_variable_dict['local port'].get())
 
+        if local_port < 1 or local_port > 65535 or target_port < 1 or target_port > 65535:
+            messagebox.showerror(
+                self.window_name,
+                'All ports should be set between 1 and 65535.'
+            )
+            return
+
         # Check connectivity of the jump server
         if self.check_connectivity_flag:
             try:
-                check_host_availability(username, jump_server)
+                check_host_availability(
+                    username=username,
+                    host=jump_server,
+                    ssh_key_path=self.ssh_key_file
+                )
             except Exception as e:
                 messagebox.showerror(
                     self.window_name,
@@ -205,7 +231,13 @@ class RootWindow(tk.Frame):
 
             # Check connectivity of the target host
             try:
-                check_target_host_availability(username, jump_server, target_host, local_port)
+                check_target_host_availability(
+                    username=username,
+                    jump=jump_server,
+                    host=target_host,
+                    local_port=local_port,
+                    ssh_key_path=self.ssh_key_file
+                )
             except Exception as e:
                 messagebox.showerror(
                     self.window_name,
@@ -215,19 +247,24 @@ class RootWindow(tk.Frame):
                 return
 
         self.forwarding_tunnel = forwarding_through_jump_server(
-            username,
-            jump_server,
-            target_host,
-            local_port,
-            target_port
+            username=username,
+            jump=jump_server,
+            host=target_host,
+            local_port=local_port,
+            host_port=target_port,
+            ssh_key_path=self.ssh_key_file
         )
         self.connect_status = self.CONNECTED
         self.refresh_labels(self.tk_variable_dict['status'], self.CONNECTED_TEXT)
+
+        self.set_widget_with_connect_status()
 
     def disconnect_callback(self):
         self.forwarding_tunnel.close()
         self.connect_status = self.DISCONNECTED
         self.refresh_labels(self.tk_variable_dict['status'], self.DISCONNECTED_TEXT)
+
+        self.set_widget_with_connect_status()
 
     def about_callback(self):
         messagebox.showinfo(
@@ -241,6 +278,20 @@ class RootWindow(tk.Frame):
         self.wait_window(advanced_window)  # Wait for AdvancedSettingsWindow to be closed before resuming
 
         self.load_advanced_settings()
+
+    def set_widget_with_connect_status(self):
+        if self.connect_status == self.CONNECTED:
+            self.tk_variable_dict['username'].config(state='disabled')
+            self.tk_variable_dict['jump server'].config(state='disabled')
+            self.tk_variable_dict['target host'].config(state='disabled')
+            self.tk_variable_dict['target port'].config(state='disabled')
+            self.tk_variable_dict['local port'].config(state='disabled')
+        else:
+            self.tk_variable_dict['username'].config(state='normal')
+            self.tk_variable_dict['jump server'].config(state='normal')
+            self.tk_variable_dict['target host'].config(state='normal')
+            self.tk_variable_dict['target port'].config(state='normal')
+            self.tk_variable_dict['local port'].config(state='normal')
 
     # Static methods
     @staticmethod
